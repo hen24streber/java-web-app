@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17.0.11_9-jdk-alpine as build
+FROM eclipse-temurin:21-jdk-alpine as build
 WORKDIR /workspace/app
 
 COPY mvnw .
@@ -14,7 +14,7 @@ FROM build AS vulnscan
 COPY --from=aquasec/trivy:latest /usr/local/bin/trivy /usr/local/bin/trivy
 RUN trivy rootfs --no-progress /
 
-FROM eclipse-temurin:17.0.11_9-jdk-alpine
+FROM eclipse-temurin:21-jdk-alpine
 VOLUME /tmp
 ARG DEPENDENCY=/workspace/app/target/dependency
 COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
