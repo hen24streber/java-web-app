@@ -1,0 +1,39 @@
+pipeline {
+  agent {
+    label 'linux'
+  }
+  environment {
+    CONTAINER_IMAGE = 'darinpope/java-web-app:latest'
+    TRIVY_VERSION='0.51.2'
+  }
+  options {
+    buildDiscarder(logRotator(numToKeepStr: '5'))
+  }
+  stages {
+    stage('Build container image') {
+      steps {
+        sh 'docker build -t $CONTAINER_IMAGE .'
+      }
+    }
+    stage('Create Trivy Report') {
+      steps {
+        script {
+          def trivyOutput = sh(script: "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/Library/Caches:/root/.cache/ aquasec/trivy:$TRIVY_VERSION --quiet image --no-progress --exit-code 0 --severity MEDIUM,HIGH,CRITICAL $CONTAINER_IMAGE", returnStdout: true).trim()
+
+          // Display Trivy scan results
+          println trivyOutput
+
+          // Check if vulnerabilities were found
+          if (trivyOutput.contains("Total: 0")) {
+            echo "No vulnerabilities found in the Docker image."
+          } else {
+            echo "Vulnerabilities found in the Docker image."
+            // You can take further actions here based on your requirements
+            // For example, failing the build if vulnerabilities are found
+            // error "Vulnerabilities found in the Docker image."
+          }
+        }
+      }
+    }
+  }
+}
