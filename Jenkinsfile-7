@@ -26,11 +26,7 @@
     stage('Trivy scan for image misconfiguration exit on HIGH,CRITICAL') {
       steps {
         script {
-          def trivyStatus = sh(returnStatus: true, script: "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/Library/Caches:/root/.cache/ aquasec/trivy:$TRIVY_VERSION --quiet image --no-progress --exit-code 1 --scanners misconfig,secret --image-config-scanners misconfig,secret --severity HIGH,CRITICAL $IMAGE_NAME:$IMAGE_VERSION")
-          if ( trivyStatus != 0 ) {
-            echo "ERROR"
-            exit 1
-          }
+          sh("docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/Library/Caches:/root/.cache/ aquasec/trivy:$TRIVY_VERSION --quiet image --no-progress --exit-code 1 --scanners misconfig,secret --image-config-scanners misconfig,secret --severity HIGH,CRITICAL $IMAGE_NAME:$IMAGE_VERSION")
         }
       }
     }
@@ -44,10 +40,7 @@
     stage('Trivy scan for image vulnerabilities and exit on CRITICAL') {
       steps {
         script {
-          sh '''
-            set +x
-            docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/Library/Caches:/root/.cache/ aquasec/trivy:$TRIVY_VERSION --quiet image --no-progress --exit-code 1 --scanners vuln --severity CRITICAL $IMAGE_NAME:$IMAGE_VERSION
-          '''
+          sh ("docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/Library/Caches:/root/.cache/ aquasec/trivy:$TRIVY_VERSION --quiet image --no-progress --exit-code 1 --scanners vuln --severity CRITICAL $IMAGE_NAME:$IMAGE_VERSION")
         }
       }
     }
