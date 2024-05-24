@@ -32,6 +32,7 @@ pipeline {
           }
         }
       }
+     }
     stage('Trivy scan for image vulnerabilities') {
       steps {
         script {
