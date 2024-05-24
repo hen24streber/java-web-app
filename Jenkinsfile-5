@@ -17,14 +17,14 @@ pipeline {
     }
     stage('Fetch Trivy html Template') {
       steps {
-        sh 'curl -sSfL -o $HOME/Library/Caches/html.tpl https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl'
+        sh 'curl -sSfLO https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl'
       }
     }
     stage('Create Trivy Report') {
       steps {
         script {
           //def trivyOutput = sh(script: "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/Library/Caches:/root/.cache/ aquasec/trivy:$TRIVY_VERSION --quiet image --no-progress --exit-code 0 --severity MEDIUM,HIGH,CRITICAL $CONTAINER_IMAGE", returnStdout: true).trim()
-          def trivyReport = sh(script: "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/Library/Caches:/root/.cache/ aquasec/trivy:$TRIVY_VERSION --quiet image --no-progress --exit-code 0 --format template --template "@/root/.cache/html.tpl" -o gl-container-scanning-report.json $CONTAINER_IMAGE", returnStdout: true).trim()
+          def trivyReport = sh(script: "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/Library/Caches:/root/.cache/ aquasec/trivy:$TRIVY_VERSION --quiet image --no-progress --exit-code 0 --format template --template "@html.tpl" -o gl-container-scanning-report.json $CONTAINER_IMAGE", returnStdout: true).trim()
           // Display Trivy scan results
           //println trivyOutput
           println trivyReport
