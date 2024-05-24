@@ -33,7 +33,7 @@
     stage('Trivy scan for image vulnerabilities and exit on CRITICAL') {
       steps {
         script {
-          def trivyResult = sh(script: "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/Library/Caches:/root/.cache/ aquasec/trivy:$TRIVY_VERSION --quiet image --no-progress --exit-code 1 --scanners vuln --severity CRITICAL $IMAGE_NAME:$IMAGE_VERSION 2>&1>/dev/null", returnStdout: false).trim()
+          def trivyResult = sh(script: "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/Library/Caches:/root/.cache/ aquasec/trivy:$TRIVY_VERSION --quiet image --no-progress --exit-code 1 --scanners vuln --severity CRITICAL $IMAGE_NAME:$IMAGE_VERSION", returnStdout: false).trim()
           if (trivyResult.contains("CRITICAL")) {
             echo "ERROR: The image contains CRITICAL vulrenabilities."
           }
