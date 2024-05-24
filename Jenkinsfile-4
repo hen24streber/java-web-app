@@ -3,25 +3,30 @@ pipeline {
     label 'linux'
   }
   environment {
-    IMAGE = 'darinpope/java-web-app:latest'
+    CONTAINER_IMAGE = 'darinpope/java-web-app:latest'
+    TRIVY_VERSION='0.51.2'
   }
   options {
     buildDiscarder(logRotator(numToKeepStr: '5'))
   }
   stages {
-    stage('Build') {
+    stage('Build container image') {
       steps {
-        sh 'docker build -t $IMAGE .'
+        sh 'docker build -t $CONTAINER_IMAGE .'
       }
     }
-    stage('Report') {
+    stage('Create Trivy Report') {
       steps {
-        sh 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/Library/Caches:/root/.cache/ aquasec/trivy:0.51.2 --quiet image --no-progress --exit-code 0 --severity MEDIUM,HIGH,CRITICAL $IMAGE'
+        script {
+          sh 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/Library/Caches:/root/.cache/ aquasec/trivy:$TRIVY_VERSION --quiet image --no-progress --exit-code 0 --severity MEDIUM,HIGH,CRITICAL $CONTAINER_IMAGE'
+        }
       }
     }
-    stage('Scan') {
+    stage('Scan image with Trivy') {
       steps {
-        sh 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/Library/Caches:/root/.cache/ aquasec/trivy:0.51.2 --quiet image --no-progress --exit-code 1 --severity CRITICAL $IMAGE'
+        script {
+          sh 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/Library/Caches:/root/.cache/ aquasec/trivy:$TRIVY_VERSION --quiet image --no-progress --exit-code 1 --severity CRITICAL $CONTAINER_IMAGE'
+        }
       }
     }
   }
