@@ -15,20 +15,31 @@ pipeline {
         sh 'docker build -t $CONTAINER_IMAGE .'
       }
     }
-    stage('Fetch Trivy html Template') {
-      steps {
-        sh 'curl -sSfLO https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl'
-      }
-    }
-    stage('Create Trivy Report') {
+    stage('Trivy scan for image misconfiguration') {
       steps {
         script {
-          def trivyOutput = sh(script: "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/Library/Caches:/root/.cache/ aquasec/trivy:$TRIVY_VERSION --quiet image --no-progress --exit-code 0 --severity MEDIUM,HIGH,CRITICAL $CONTAINER_IMAGE", returnStdout: true).trim()
+          def trivyMisconfigOutput = sh(script: "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/Library/Caches:/root/.cache/ aquasec/trivy:$TRIVY_VERSION --quiet image --no-progress --exit-code 0 --scanners misconfig,secret --image-config-scanners misconfig,secret --severity MEDIUM,HIGH,CRITICAL $CONTAINER_IMAGE", returnStdout: true).trim()
           // Display Trivy scan results
-          println trivyOutput
-
+          println trivyMisconfigOutput
           // Check if vulnerabilities were found
-          if (trivyOutput.contains("Total: 0")) {
+          if (trivyMisconfigOutput.contains("Total: 0")) {
+            echo "No vulnerabilities found in the Docker image."
+          } else {
+            echo "Vulnerabilities found in the Docker image."
+            // You can take further actions here based on your requirements
+            // For example, failing the build if vulnerabilities are found
+            // error "Vulnerabilities found in the Docker image."
+          }
+        }
+      }
+    stage('Trivy scan for image vulnerabilities') {
+      steps {
+        script {
+          def trivyVulnOutput = sh(script: "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/Library/Caches:/root/.cache/ aquasec/trivy:$TRIVY_VERSION --quiet image --no-progress --exit-code 0 --scanners vuln --severity HIGH,CRITICAL $CONTAINER_IMAGE", returnStdout: true).trim()
+          // Display Trivy scan results
+          println trivyVulnOutput
+          // Check if vulnerabilities were found
+          if (trivyVulnOutput.contains("Total: 0")) {
             echo "No vulnerabilities found in the Docker image."
           } else {
             echo "Vulnerabilities found in the Docker image."
