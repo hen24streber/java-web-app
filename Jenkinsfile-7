@@ -1,0 +1,34 @@
+pipeline {
+  agent {
+    label 'linux'
+  }
+  environment {
+    IMAGE_NAME='darinpope/java-web-app'
+    IMAGE_VERSION='latest'
+    TRIVY_VERSION='0.51.2'
+  }
+  options {
+    buildDiscarder(logRotator(numToKeepStr: '5'))
+  }
+  stages {
+    stage('Build container image') {
+      steps {
+        sh 'docker build -t $IMAGE_NAME:$IMAGE_VERSION .'
+      }
+    }
+    stage('Trivy scan for image misconfiguration') {
+      steps {
+        script {
+          sh("docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/Library/Caches:/root/.cache/ aquasec/trivy:$TRIVY_VERSION --quiet image --no-progress --exit-code 0 --scanners misconfig,secret --image-config-scanners misconfig,secret --severity MEDIUM,HIGH,CRITICAL $IMAGE_NAME:$IMAGE_VERSION")
+        }
+      }
+    }
+    stage('Trivy scan for image misconfiguration') {
+      steps {
+        script {
+          sh("docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/Library/Caches:/root/.cache/ aquasec/trivy:$TRIVY_VERSION --quiet image --no-progress --exit-code 0 --scanners misconfig,secret --image-config-scanners misconfig,secret --severity MEDIUM,HIGH,CRITICAL $IMAGE_NAME:$IMAGE_VERSION 2>&1 >/dev/null")
+        }
+      }
+    }
+  }
+}
