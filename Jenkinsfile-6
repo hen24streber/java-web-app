@@ -19,10 +19,9 @@ pipeline {
       steps {
         script {
           sh("docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/Library/Caches:/root/.cache/ aquasec/trivy:$TRIVY_VERSION --quiet image --no-progress --exit-code 0 --scanners misconfig,secret --image-config-scanners misconfig,secret --severity MEDIUM,HIGH,CRITICAL $CONTAINER_IMAGE")
-          }
         }
       }
-     }
+    }
     stage('Trivy scan for image misconfiguration') {
       steps {
         script {
