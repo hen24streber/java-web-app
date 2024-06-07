@@ -3,12 +3,9 @@
     label 'linux'
   }
   environment {
-    IMAGE_NAME='darinpope/java-web-app'
-    IMAGE_VERSION='latest'
+    IMAGE_NAME='nginx'
+    IMAGE_VERSION='1.20-bullseye'
     TRIVY_VERSION='0.51.2'
-  }
-  options {
-    buildDiscarder(logRotator(numToKeepStr: '5'))
   }
   stages {
     stage('Build container image') {
