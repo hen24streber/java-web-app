@@ -3,8 +3,8 @@
     label 'linux'
   }
   environment {
-    IMAGE_NAME='python'
-    IMAGE_VERSION='3.8-bullseye'
+    IMAGE_NAME='darinpope/java-web-app'
+    IMAGE_VERSION='latest'
     TRIVY_VERSION='0.51.2'
   }
   options {
