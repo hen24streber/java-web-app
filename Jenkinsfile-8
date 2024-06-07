@@ -8,11 +8,6 @@
     TRIVY_VERSION='0.51.2'
   }
   stages {
-    stage('Build container image') {
-      steps {
-        sh 'docker build -t $IMAGE_NAME:$IMAGE_VERSION .'
-      }
-    }
     stage('Trivy scan for image misconfiguration show MEDIUM,HIGH,CRITICAL') {
       steps {
         script {
